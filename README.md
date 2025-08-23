@@ -4,7 +4,7 @@ Um solucionador de Sudoku interativo construído com ClojureScript e Shadow CLJS
 
 ## 🚀 Demo Online
 
-**[Jogar Sudoku Solver](https://liryannesn.github.io/sudoku-solver/)**
+**[Jogar Sudoku Solver](https://liryanne.github.io/sudoku-solver/)**
 
 ## ✨ Funcionalidades
 

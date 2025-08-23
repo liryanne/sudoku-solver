@@ -36,8 +36,9 @@
           c (range box-col (+ box-col 3))]
       (get-in board [r c]))))
 
-(defn has-duplicate? [values target-value target-pos]
+(defn has-duplicate?
   "Verifica se há duplicata do target-value, ignorando a posição target-pos"
+  [values target-value target-pos]
   (let [filtered-values (map-indexed 
                           (fn [idx val] 
                             (when (not= idx target-pos) val)) 
@@ -45,8 +46,9 @@
         non-zero-values (filter #(and % (pos? %)) filtered-values)]
     (some #(= % target-value) non-zero-values)))
 
-(defn is-valid-move? [board row col value]
+(defn is-valid-move?
   "Verifica se colocar 'value' na posição [row col] é válido"
+  [board row col value]
   (if (zero? value)
     true  ; Sempre pode apagar
     (let [row-values (get-row board row)
@@ -58,15 +60,17 @@
                (has-duplicate? box-values value box-pos))))))
 
 ;; Algoritmo de resolução (Backtracking)
-(defn find-empty-cell [board]
+(defn find-empty-cell
   "Encontra a primeira célula vazia (retorna [row col] ou nil)"
+  [board]
   (first (for [row (range 9)
                col (range 9)
                :when (zero? (get-in board [row col]))]
            [row col])))
 
-(defn solve-sudoku [board]
+(defn solve-sudoku
   "Resolve o Sudoku usando backtracking. Retorna board resolvido ou nil se impossível"
+  [board]
   (if-let [empty-pos (find-empty-cell board)]
     (let [[row col] empty-pos]
       (loop [num 1]
@@ -158,8 +162,9 @@
          :solving false)
   (render-board!))
 
-(defn move-selection [direction]
+(defn move-selection 
   "Move a seleção na direção especificada"
+  [direction]
   (let [selected (:selected-cell @game-state)]
     (when selected
       (let [[row col] selected
