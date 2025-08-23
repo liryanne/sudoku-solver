@@ -1,0 +1,49 @@
+# Compiled ClojureScript
+public/js/
+target/
+out/
+resources/public/js/
+
+# Shadow-CLJS
+.shadow-cljs/
+
+# Leiningen
+.lein-deps-sum
+.lein-repl-history
+.lein-plugins/
+.lein-failures
+.nrepl-port
+
+# LSP/IDE
+.lsp/
+.clj-kondo/
+.calva/
+.vscode/
+.idea/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.#*
+\#*#
+
+# Logs
+*.log
+logs/
