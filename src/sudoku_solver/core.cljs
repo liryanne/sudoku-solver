@@ -1,4 +1,4 @@
-(ns my-sudoku.core)
+(ns sudoku-solver.core)
 
 ;; Estado do jogo
 (defonce game-state 
@@ -210,7 +210,7 @@
 (defn init! []
   (let [app-element (.getElementById js/document "app")]
     (set! (.-innerHTML app-element) 
-          (str "<h1>🎯 My Sudoku Solver</h1>"
+          (str "<h1>🎯 Sudoku Solver</h1>"
                "<div id='sudoku-board'>" (create-board) "</div>"
                (create-controls)
                "<p class='instructions'>Use setas para navegar | Digite 1-9 | Delete/Backspace/0 para apagar | GO para resolver</p>"))

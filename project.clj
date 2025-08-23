@@ -1,5 +1,5 @@
-(defproject my-sudoku "0.1.0-SNAPSHOT"
-  :description "Sudoku game in ClojureScript"
+(defproject sudoku-solver "0.1.0-SNAPSHOT"
+  :description "Interactive Sudoku Solver in ClojureScript"
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [org.clojure/clojurescript "1.11.60"]]
   
