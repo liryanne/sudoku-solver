@@ -1,5 +1,5 @@
 # Compiled ClojureScript
-public/js/
+# public/js/ - Comentado para GitHub Pages
 target/
 out/
 resources/public/js/
