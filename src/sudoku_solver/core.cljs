@@ -1,13 +1,13 @@
 (ns sudoku-solver.core)
 
-;; Estado do jogo
+;; Game state
 (defonce game-state 
   (atom {:board (vec (repeat 9 (vec (repeat 9 0))))
-         :initial-board (vec (repeat 9 (vec (repeat 9 0))))  ; Números colocados pelo usuário
+         :initial-board (vec (repeat 9 (vec (repeat 9 0))))  ; Numbers placed by user
          :selected-cell nil
          :solving false}))
 
-;; Declaração antecipada
+;; Forward declaration
 (declare render-board!)
 
 (defn get-cell-value [row col]
@@ -22,7 +22,7 @@
 (defn cell-selected? [row col]
   (= (:selected-cell @game-state) [row col]))
 
-;; Funções de validação do Sudoku
+;; Sudoku validation functions
 (defn get-row [board row]
   (get board row))
 
@@ -37,7 +37,7 @@
       (get-in board [r c]))))
 
 (defn has-duplicate?
-  "Verifica se há duplicata do target-value, ignorando a posição target-pos"
+  "Checks if there's a duplicate of target-value, ignoring target-pos position"
   [values target-value target-pos]
   (let [filtered-values (map-indexed 
                           (fn [idx val] 
@@ -47,10 +47,10 @@
     (some #(= % target-value) non-zero-values)))
 
 (defn is-valid-move?
-  "Verifica se colocar 'value' na posição [row col] é válido"
+  "Checks if placing 'value' at position [row col] is valid"
   [board row col value]
   (if (zero? value)
-    true  ; Sempre pode apagar
+    true  ; Can always clear
     (let [row-values (get-row board row)
           col-values (get-column board col)
           box-values (vec (get-box board row col))
@@ -59,9 +59,9 @@
                (has-duplicate? col-values value row)
                (has-duplicate? box-values value box-pos))))))
 
-;; Algoritmo de resolução (Backtracking)
+;; Solving algorithm (Backtracking)
 (defn find-empty-cell
-  "Encontra a primeira célula vazia (retorna [row col] ou nil)"
+  "Finds the first empty cell (returns [row col] or nil)"
   [board]
   (first (for [row (range 9)
                col (range 9)
@@ -69,7 +69,7 @@
            [row col])))
 
 (defn solve-sudoku
-  "Resolve o Sudoku usando backtracking. Retorna board resolvido ou nil se impossível"
+  "Solves Sudoku using backtracking. Returns solved board or nil if impossible"
   [board]
   (if-let [empty-pos (find-empty-cell board)]
     (let [[row col] empty-pos]
@@ -79,11 +79,11 @@
             (let [new-board (assoc-in board [row col] num)
                   result (solve-sudoku new-board)]
               (if result
-                result  ; Solução encontrada
-                (recur (inc num))))  ; Tenta próximo número
-            (recur (inc num)))  ; Número inválido, tenta próximo
-          nil)))  ; Nenhum número funcionou
-    board))  ; Não há células vazias, puzzle resolvido
+                result  ; Solution found
+                (recur (inc num))))  ; Try next number
+            (recur (inc num)))  ; Invalid number, try next
+          nil)))  ; No number worked
+    board))  ; No empty cells, puzzle solved
 
 (defn get-cell-class [row col]
   (let [value (get-cell-value row col)
@@ -92,10 +92,14 @@
         board (:board @game-state)
         valid? (is-valid-move? board row col value)]
     (cond
-      selected? "cell selected"  ; Sempre mostra seleção por cima
+      ;; Selected cells - different colors based on type
+      (and selected? initial?) "cell selected-initial"  ; Green when selected manual number
+      (and selected? (pos? value)) "cell selected-solved"  ; Blue when selected auto number  
+      selected? "cell selected"  ; Default selection for empty cells
+      ;; Non-selected cells
       (and (pos? value) (not valid?)) "cell invalid"
-      initial? "cell initial"  ; Números colocados pelo usuário (verde)
-      (pos? value) "cell solved"  ; Números resolvidos pelo algoritmo (azul)
+      initial? "cell initial"  ; Numbers placed by user (green)
+      (pos? value) "cell solved"  ; Numbers solved by algorithm (blue)
       :else "cell")))
 
 (defn create-cell [row col]
@@ -129,9 +133,9 @@
       (set! (.-innerHTML board-element) (create-board)))))
 
 (defn set-cell-value! [row col value]
-  (when (not (:solving @game-state))  ; Só permite editar se não estiver resolvendo
+  (when (not (:solving @game-state))  ; Only allow editing if not solving
     (swap! game-state assoc-in [:board row col] value)
-    (swap! game-state assoc-in [:initial-board row col] value)  ; Marca como inicial
+    (swap! game-state assoc-in [:initial-board row col] value)  ; Mark as initial
     (render-board!)))
 
 (defn clear-cell! [row col]
@@ -151,19 +155,19 @@
       (do
         (swap! game-state assoc :board solution :solving false)
         (render-board!)
-        (js/alert "✅ Puzzle resolvido com sucesso!"))
-      (js/alert "❌ Este puzzle não tem solução válida!"))))
+        (js/alert "✅ Puzzle solved successfully!"))
+      (js/alert "❌ This puzzle has no valid solution!"))))
 
 (defn clear-board! []
   (swap! game-state assoc 
          :board (vec (repeat 9 (vec (repeat 9 0))))
          :initial-board (vec (repeat 9 (vec (repeat 9 0))))
-         :selected-cell nil
+         :selected-cell [4 4]  ; Position in center (like initial load)
          :solving false)
   (render-board!))
 
 (defn move-selection 
-  "Move a seleção na direção especificada"
+  "Moves selection in the specified direction"
   [direction]
   (let [selected (:selected-cell @game-state)]
     (when selected
@@ -179,7 +183,7 @@
   (let [key (.-key event)
         selected (:selected-cell @game-state)]
     (cond
-      ;; Navegação com setas (sempre funciona)
+      ;; Arrow navigation (always works)
       (= key "ArrowUp") 
       (do (.preventDefault event) (move-selection :up))
       
@@ -192,22 +196,22 @@
       (= key "ArrowRight") 
       (do (.preventDefault event) (move-selection :right))
       
-      ;; Edição (só quando não está resolvendo)
+      ;; Editing (only when not solving)
       (and selected (not (:solving @game-state)))
       (let [[row col] selected]
         (cond
-          ;; Números de 1-9
+          ;; Numbers 1-9
           (re-matches #"[1-9]" key)
           (let [number (js/parseInt key)]
             (set-cell-value! row col number))
           
-          ;; Apagar célula (Delete, Backspace ou 0)
+          ;; Clear cell (Delete, Backspace or 0)
           (or (= key "Delete") 
               (= key "Backspace") 
               (= key "0"))
           (clear-cell! row col))))))
 
-;; Funções globais para serem chamadas pelo HTML
+;; Global functions to be called by HTML
 (set! (.-selectCell js/window) select-cell!)
 (set! (.-solvePuzzle js/window) solve-puzzle!)
 (set! (.-clearBoard js/window) clear-board!)
@@ -218,10 +222,10 @@
           (str "<h1>🎯 Sudoku Solver</h1>"
                "<div id='sudoku-board'>" (create-board) "</div>"
                (create-controls)
-               "<p class='instructions'>Use setas para navegar | Digite 1-9 | Delete/Backspace/0 para apagar | GO para resolver</p>"))
+               "<p class='instructions'>Use arrows to navigate | Type 1-9 | Delete/Backspace/0 to clear | GO to solve</p>"))
     
-    ;; Selecionar célula inicial (centro do grid)
+    ;; Select initial cell (center of grid)
     (select-cell! 4 4)
     
-    ;; Adicionar listener para teclado
+    ;; Add keyboard listener
     (.addEventListener js/document "keydown" handle-keypress)))
