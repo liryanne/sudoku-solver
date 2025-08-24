@@ -1,4 +1,4 @@
-name: Build and Deploy to GitHub Pages
+name: Simple Build and Deploy
 
 on:
   push:
@@ -8,10 +8,6 @@ permissions:
   contents: read
   pages: write
   id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -24,16 +20,12 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        registry-url: 'https://registry.npmjs.org'
         
-    - name: Clear npm cache
-      run: npm cache clean --force
-        
-    - name: Install dependencies
-      run: npm install --registry https://registry.npmjs.org
+    - name: Install Shadow CLJS globally
+      run: npm install -g shadow-cljs@2.20.1
       
     - name: Build project
-      run: npx shadow-cljs release app
+      run: shadow-cljs release app
       
     - name: Setup Pages
       uses: actions/configure-pages@v4
