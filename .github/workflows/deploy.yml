@@ -3,8 +3,6 @@ name: Build and Deploy to GitHub Pages
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 permissions:
   contents: read
@@ -26,9 +24,13 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Clear npm cache
+      run: npm cache clean --force
         
     - name: Install dependencies
-      run: npm install
+      run: npm install --registry https://registry.npmjs.org
       
     - name: Build project
       run: npx shadow-cljs release app
