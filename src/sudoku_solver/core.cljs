@@ -5,7 +5,8 @@
   (atom {:board (vec (repeat 9 (vec (repeat 9 0))))
          :initial-board (vec (repeat 9 (vec (repeat 9 0))))  ; Numbers placed by user
          :selected-cell nil
-         :solving false}))
+         :solving false
+         :is-mobile false}))
 
 ;; Forward declaration
 (declare render-board!)
@@ -127,10 +128,38 @@
        "<button onclick='clearBoard()' class='btn btn-clear'>🗑️ Clear</button>"
        "</div>"))
 
+(defn create-mobile-keyboard []
+  (str "<div id='mobile-keyboard' class='mobile-keyboard'>"
+       "<div class='keyboard-title'>Toque para inserir número:</div>"
+       "<div class='keyboard-grid'>"
+       "<button class='keyboard-btn' onclick='inputNumber(1)'>1</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(2)'>2</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(3)'>3</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(4)'>4</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(5)'>5</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(6)'>6</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(7)'>7</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(8)'>8</button>"
+       "<button class='keyboard-btn' onclick='inputNumber(9)'>9</button>"
+       "<button class='keyboard-btn clear' onclick='clearSelectedCell()'>🗑️</button>"
+       "</div>"
+       "</div>"))
+
 (defn render-board! []
   (let [board-element (.getElementById js/document "sudoku-board")]
     (when board-element
       (set! (.-innerHTML board-element) (create-board)))))
+
+(defn show-mobile-keyboard! []
+  (when (:is-mobile @game-state)
+    (let [keyboard (.getElementById js/document "mobile-keyboard")]
+      (when keyboard
+        (.add (.-classList keyboard) "show")))))
+
+(defn hide-mobile-keyboard! []
+  (let [keyboard (.getElementById js/document "mobile-keyboard")]
+    (when keyboard
+      (.remove (.-classList keyboard) "show"))))
 
 (defn set-cell-value! [row col value]
   (when (not (:solving @game-state))  ; Only allow editing if not solving
@@ -146,7 +175,9 @@
 
 (defn select-cell! [row col]
   (swap! game-state assoc :selected-cell [row col])
-  (render-board!))
+  (render-board!)
+  (when (:is-mobile @game-state)
+    (show-mobile-keyboard!)))
 
 (defn solve-puzzle! []
   (let [current-board (:board @game-state)
@@ -164,7 +195,9 @@
          :initial-board (vec (repeat 9 (vec (repeat 9 0))))
          :selected-cell [4 4]  ; Position in center (like initial load)
          :solving false)
-  (render-board!))
+  (render-board!)
+  (when (:is-mobile @game-state)
+    (show-mobile-keyboard!)))
 
 (defn move-selection 
   "Moves selection in the specified direction"
@@ -178,6 +211,18 @@
                                 :left [row (max 0 (dec col))]
                                 :right [row (min 8 (inc col))])]
         (select-cell! new-row new-col)))))
+
+(defn input-number! [number]
+  (let [selected (:selected-cell @game-state)]
+    (when (and selected (not (:solving @game-state)))
+      (let [[row col] selected]
+        (set-cell-value! row col number)))))
+
+(defn clear-selected-cell! []
+  (let [selected (:selected-cell @game-state)]
+    (when (and selected (not (:solving @game-state)))
+      (let [[row col] selected]
+        (clear-cell! row col)))))
 
 (defn handle-keypress [event]
   (let [key (.-key event)
@@ -215,17 +260,28 @@
 (set! (.-selectCell js/window) select-cell!)
 (set! (.-solvePuzzle js/window) solve-puzzle!)
 (set! (.-clearBoard js/window) clear-board!)
+(set! (.-inputNumber js/window) input-number!)
+(set! (.-clearSelectedCell js/window) clear-selected-cell!)
 
 (defn init! []
-  (let [app-element (.getElementById js/document "app")]
+  ;; Detectar se é mobile usando a variável global definida no HTML
+  (let [is-mobile (or (.-IS_MOBILE js/window) false)]
+    (swap! game-state assoc :is-mobile is-mobile)
+    (js/console.log "Mobile detectado no ClojureScript:" is-mobile))
+  
+  (let [app-element (.getElementById js/document "app")
+        instructions-text (if (:is-mobile @game-state)
+                           "Toque nas células e use o teclado numérico | GO para resolver"
+                           "Use arrows to navigate | Type 1-9 | Delete/Backspace/0 to clear | GO to solve")]
     (set! (.-innerHTML app-element) 
           (str "<h1>🎯 Sudoku Solver</h1>"
                "<div id='sudoku-board'>" (create-board) "</div>"
                (create-controls)
-               "<p class='instructions'>Use arrows to navigate | Type 1-9 | Delete/Backspace/0 to clear | GO to solve</p>"))
+               (when (:is-mobile @game-state) (create-mobile-keyboard))
+               "<p class='instructions'>" instructions-text "</p>"))
     
     ;; Select initial cell (center of grid)
     (select-cell! 4 4)
     
-    ;; Add keyboard listener
+    ;; Add keyboard listener (sempre adicionar, mesmo em mobile para teclados externos)
     (.addEventListener js/document "keydown" handle-keypress)))

@@ -150,12 +150,144 @@
         .row:nth-child(9) .cell {
             border-bottom: none;
         }
+
+        /* Teclado numérico virtual para mobile */
+        .mobile-keyboard {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .mobile-keyboard.show {
+            display: block;
+        }
+
+        .keyboard-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .keyboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .keyboard-btn {
+            padding: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .keyboard-btn:hover {
+            background-color: #e9e9e9;
+            border-color: #bbb;
+        }
+
+        .keyboard-btn:active {
+            background-color: #ddd;
+            transform: scale(0.95);
+        }
+
+        .keyboard-btn.clear {
+            background-color: #ffebee;
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        .keyboard-btn.clear:hover {
+            background-color: #ffcdd2;
+        }
+
+        /* Estilos responsivos para mobile */
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+            
+            .cell {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+                margin: 5px;
+            }
+            
+            .instructions {
+                font-size: 12px;
+                padding: 0 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .cell {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+            
+            .board {
+                border: 2px solid #333;
+            }
+            
+            .cell:nth-child(3),
+            .cell:nth-child(6) {
+                border-right: 2px solid #333;
+            }
+            
+            .row:nth-child(3) .cell,
+            .row:nth-child(6) .cell {
+                border-bottom: 2px solid #333;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <p>Carregando...</p>
     </div>
+    
+    <!-- Script para detectar mobile e configurar comportamento -->
+    <script>
+        // Função para detectar se é dispositivo móvel
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (window.innerWidth <= 768 && 'ontouchstart' in window);
+        }
+        
+        // Armazenar informação se é mobile globalmente
+        window.IS_MOBILE = isMobileDevice();
+        
+        // Log para debug
+        console.log('Dispositivo móvel detectado:', window.IS_MOBILE);
+    </script>
+    
     <script src="js/main.js"></script>
 </body>
 </html>
